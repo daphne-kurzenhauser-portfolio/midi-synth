@@ -5,11 +5,13 @@
 #include <string.h>
 #include <time.h>
 #include <alsa/asoundlib.h>
-#include "note_lut.h"
 #include "midi_lut.h"
-#include "notes.h"
 
 #define MAX_MIDI_CHANNELS   4
+
+typedef uint8_t  u8;
+typedef int16_t  s16;
+typedef uint32_t u32;
 
 typedef enum {
   ChanNoteOff,
@@ -25,36 +27,36 @@ typedef enum {
   SysExclusiveMsg
 } msgType;
 
-typedef struct MidiCommonData {
+typedef struct midiInitData {
+  char devname[16];
   u8 flags;
-} MidiCommonData;
+} midiInitData;
+
+typedef struct midiCommonData {
+  u8 flags;
+} midiCommonData;
 
 typedef struct MidiMsg {
   msgType msg_type;           ///< message type
   unsigned char status_byte;
   unsigned char data_buf[2];             ///< buffer of data bytes
-  unsigned char num_data_bytes;
-  MidiCommonData *mididata;
+  int num_data_bytes;
+  u8 channel; 
+  midiCommonData *mididata;
 } MidiMsg;
 
 typedef struct MidiController {
-  MidiCommonData mididata;      ///< struct to hold and pass common data 
   MidiMsg midi_buffer[64];      ///< buffer of MidiMsg objects
+  midiCommonData midi_data;      ///< struct to hold and pass common data 
   u8 buf_iter_idx;
-  snd_rawmidi_t *input_handler; ///< input handler for raw MIDI data
-  char *devname;                ///< named device node
+  snd_rawmidi_t *hdl;           ///< input handler for raw MIDI data
+  struct pollfd *pfds;
+  int npfds;
 } MidiController;
 
+int initMidiController(MidiController *midi_ctl, midiInitData init_data);
+
 int parseMidiBuffer(MidiController *midi_ctl, unsigned char *buf);
-int dispatchCurrentBuffer(MidiController *midi_ctl);
-void dispatchNoteOn(MidiMsg* msg);
-void dispatchNoteOff(MidiMsg* msg);
-void dispatchKeyPressure(MidiMsg* msg);
-void dispatchControlChange(MidiMsg* msg);
-void dispatchChannelMode(MidiMsg* msg);
-void dispatchProgramChange(MidiMsg* msg);
-void dispatchChannelPressure(MidiMsg* msg);
-void dispatchPitchBend(MidiMsg* msg);
 
 void print_midi_msg(unsigned char *buf);
 const char* fmt_status_byte(unsigned char buf);
