@@ -1,0 +1,329 @@
+#ifndef NOTE_LUT
+#define NOTE_LUT
+
+#define  C0_Hz    16.3516
+#define Cs0_Hz    17.3239 
+#define Db0_Hz    17.3239 
+#define  D0_Hz    18.3541 
+#define Ds0_Hz    19.4454 
+#define Eb0_Hz    19.4454 
+#define  E0_Hz    20.6017 
+#define  F0_Hz    21.8268 
+#define Fs0_Hz    23.1247 
+#define Gb0_Hz    23.1247 
+#define  G0_Hz    24.4997 
+#define Gs0_Hz    25.9565 
+#define Ab0_Hz    25.9565 
+#define  A0_Hz    27.5000 
+#define As0_Hz    29.1352 
+#define Bb0_Hz    29.1352
+#define  B0_Hz    30.8677 
+#define  C1_Hz    32.7032 
+#define Cs1_Hz    34.6478 
+#define Db1_Hz    34.6478 
+#define  D1_Hz    36.7081 
+#define Ds1_Hz    38.8909 
+#define Eb1_Hz    38.8909 
+#define  E1_Hz    41.2034 
+#define  F1_Hz    43.6536 
+#define Fs1_Hz    46.2493 
+#define Gb1_Hz    46.2493 
+#define  G1_Hz    48.9994 
+#define Gs1_Hz    51.9131 
+#define Ab1_Hz    51.9131 
+#define  A1_Hz    55.0000 
+#define As1_Hz    58.2705
+#define Bb1_Hz    58.2705
+#define  B1_Hz    61.7354 
+#define  C2_Hz    65.4064
+#define Cs2_Hz    69.2957 
+#define Db2_Hz    69.2957 
+#define  D2_Hz    73.4162 
+#define Ds2_Hz    77.7818 
+#define Eb2_Hz    77.7818 
+#define  E2_Hz    82.4069 
+#define  F2_Hz    87.3071 
+#define Fs2_Hz    92.4986 
+#define Gb2_Hz    92.4986 
+#define  G2_Hz    97.9989 
+#define Gs2_Hz    103.8262 
+#define Ab2_Hz    103.8262 
+#define  A2_Hz    110.0000 
+#define As2_Hz    116.5409 
+#define Bb2_Hz    116.5409 
+#define  B2_Hz    123.4708 
+#define  C3_Hz    130.8128 
+#define Cs3_Hz    138.5913 
+#define Db3_Hz    138.5913 
+#define  D3_Hz    146.8324 
+#define Ds3_Hz    155.5635 
+#define Eb3_Hz    155.5635 
+#define  E3_Hz    164.8138 
+#define  F3_Hz    174.6141 
+#define Fs3_Hz    184.9972 
+#define Gb3_Hz    184.9972 
+#define  G3_Hz    195.9977 
+#define Gs3_Hz    207.6523 
+#define Ab3_Hz    207.6523 
+#define  A3_Hz    220.0000
+#define As3_Hz    233.0819
+#define Bb3_Hz    233.0819
+#define  B3_Hz    246.9417
+#define  C4_Hz    261.6256
+#define Cs4_Hz    277.1826
+#define Db4_Hz    277.1826
+#define  D4_Hz    293.6648
+#define Ds4_Hz    311.1270
+#define Eb4_Hz    311.1270
+#define  E4_Hz    329.6276
+#define  F4_Hz    349.2282
+#define Fs4_Hz    369.9944
+#define Gb4_Hz    369.9944
+#define  G4_Hz    391.9954
+#define Gs4_Hz    415.3047
+#define Ab4_Hz    415.3047
+#define  A4_Hz    440.0000
+#define As4_Hz    466.1638
+#define Bb4_Hz    466.1638
+#define  B4_Hz    493.8833
+#define  C5_Hz    523.2511
+#define Cs5_Hz    554.3653
+#define Db5_Hz    554.3653
+#define  D5_Hz    587.3295
+#define Ds5_Hz    622.2540
+#define Eb5_Hz    622.2540
+#define  E5_Hz    659.2551
+#define  F5_Hz    698.4565
+#define Fs5_Hz    739.9888
+#define Gb5_Hz    739.9888
+#define  G5_Hz    783.9909
+#define Gs5_Hz    830.6094
+#define Ab5_Hz    830.6094
+#define  A5_Hz    880.0000
+#define As5_Hz    932.3275
+#define Bb5_Hz    932.3275
+#define  B5_Hz    987.7666
+#define  C6_Hz    1046.502
+#define Cs6_Hz    1108.731
+#define Db6_Hz    1108.731
+#define  D6_Hz    1174.659
+#define Ds6_Hz    1244.508
+#define Eb6_Hz    1244.508
+#define  E6_Hz    1318.510
+#define  F6_Hz    1396.913
+#define Fs6_Hz    1479.978
+#define Gb6_Hz    1479.978
+#define  G6_Hz    1567.982
+#define Gs6_Hz    1661.219
+#define Ab6_Hz    1661.219
+#define  A6_Hz    1760.000
+#define As6_Hz    1864.655
+#define Bb6_Hz    1864.655
+#define  B6_Hz    1975.533
+#define  C7_Hz    2093.005
+#define Cs7_Hz    2217.461
+#define Db7_Hz    2217.461
+#define  D7_Hz    2349.318
+#define Ds7_Hz    2489.016
+#define Eb7_Hz    2489.016
+#define  E7_Hz    2637.020
+#define  F7_Hz    2793.826
+#define Fs7_Hz    2959.955
+#define Gb7_Hz    2959.955
+#define  G7_Hz    3135.963
+#define Gs7_Hz    3322.438
+#define Ab7_Hz    3322.438
+#define  A7_Hz    3520.000
+#define As7_Hz    3729.310
+#define Bb7_Hz    3729.310
+#define  B7_Hz    3951.066
+#define  C8_Hz    4186.009
+#define Cs8_Hz    4434.922
+#define Db8_Hz    4434.922
+#define  D8_Hz    4698.636
+#define Ds8_Hz    4978.032
+#define Eb8_Hz    4978.032
+#define  E8_Hz    5274.041
+#define  F8_Hz    5587.652
+#define Fs8_Hz    5919.911
+#define Gb8_Hz    5919.911
+#define  G8_Hz    6271.927
+#define Gs8_Hz    6644.875
+#define Ab8_Hz    6644.875
+#define  A8_Hz    7040.000
+#define As8_Hz    7458.620
+#define Bb8_Hz    7458.620
+#define  B8_Hz    7902.133
+#define  C9_Hz    8372.018
+                               
+typedef enum {
+  UNUSED_MIDI_0 = 0,
+  UNUSED_MIDI_1 = 1,
+  UNUSED_MIDI_2 = 2,
+  UNUSED_MIDI_3 = 3,
+  UNUSED_MIDI_4 = 4,
+  UNUSED_MIDI_5 = 5,
+  UNUSED_MIDI_6 = 6,
+  UNUSED_MIDI_7 = 7,
+  UNUSED_MIDI_8 = 8,
+  UNUSED_MIDI_9 = 9,
+  UNUSED_MIDI_10 = 10,
+  UNUSED_MIDI_11 = 11,
+  NOTE_C0   = 12,
+  NOTE_Cs0  = 13,
+  NOTE_Db0  = NOTE_Cs0,
+  NOTE_D0   = 14,
+  NOTE_Ds0  = 15,
+  NOTE_Eb0  = NOTE_Ds0,
+  NOTE_E0   = 16,
+  NOTE_F0   = 17,
+  NOTE_Fs0  = 18,
+  NOTE_Gb0  = NOTE_Fs0,
+  NOTE_G0   = 19,
+  NOTE_Gs0  = 20,
+  NOTE_Ab0  = NOTE_Gs0,
+  NOTE_A0   = 21,
+  NOTE_As0  = 22,
+  NOTE_Bb0  = NOTE_As0,
+  NOTE_B0   = 23,
+  NOTE_C1   = 24,
+  NOTE_Cs1  = 25,
+  NOTE_Db1  = NOTE_Cs1,
+  NOTE_D1   = 26,
+  NOTE_Ds1  = 27,
+  NOTE_Eb1  = NOTE_Ds1,
+  NOTE_E1   = 28,
+  NOTE_F1   = 29,
+  NOTE_Fs1  = 30,
+  NOTE_Gb1  = NOTE_Fs1,
+  NOTE_G1   = 31,
+  NOTE_Gs1  = 32,
+  NOTE_Ab1  = NOTE_Gs1,
+  NOTE_A1   = 33,
+  NOTE_As1  = 34,
+  NOTE_Bb1  = NOTE_As1,
+  NOTE_B1   = 35,
+  NOTE_C2   = 36,
+  NOTE_Cs2  = 37,
+  NOTE_Db2  = NOTE_Cs2,
+  NOTE_D2   = 38,
+  NOTE_Ds2  = 39,
+  NOTE_Eb2  = NOTE_Ds2,
+  NOTE_E2   = 40,
+  NOTE_F2   = 41,
+  NOTE_Fs2  = 42,
+  NOTE_Gb2  = NOTE_Fs2,
+  NOTE_G2   = 43,
+  NOTE_Gs2  = 44,
+  NOTE_Ab2  = NOTE_Gs2,
+  NOTE_A2   = 45,
+  NOTE_As2  = 46,
+  NOTE_Bb2  = NOTE_As2,
+  NOTE_B2   = 47,
+  NOTE_C3   = 48,
+  NOTE_Cs3  = 49,
+  NOTE_Db3  = NOTE_Cs3,
+  NOTE_D3   = 50,
+  NOTE_Ds3  = 51,
+  NOTE_Eb3  = NOTE_Ds3,
+  NOTE_E3   = 52,
+  NOTE_F3   = 53,
+  NOTE_Fs3  = 54,
+  NOTE_Gb3  = NOTE_Fs3,
+  NOTE_G3   = 55,
+  NOTE_Gs3  = 56,
+  NOTE_Ab3  = NOTE_Gs3,
+  NOTE_A3   = 57,
+  NOTE_As3  = 58,
+  NOTE_Bb3  = NOTE_As3,
+  NOTE_B3   = 59,
+  NOTE_C4   = 60,
+  NOTE_Cs4  = 61,
+  NOTE_Db4  = NOTE_Cs4,
+  NOTE_D4   = 62,
+  NOTE_Ds4  = 63,
+  NOTE_Eb4  = NOTE_Ds4,
+  NOTE_E4   = 64,
+  NOTE_F4   = 65,
+  NOTE_Fs4  = 66,
+  NOTE_Gb4  = NOTE_Fs4,
+  NOTE_G4   = 67,
+  NOTE_Gs4  = 68,
+  NOTE_Ab4  = NOTE_Gs4,
+  NOTE_A4   = 69,
+  NOTE_As4  = 70,
+  NOTE_Bb4  = NOTE_As4,
+  NOTE_B4   = 71,
+  NOTE_C5   = 72,
+  NOTE_Cs5  = 73,
+  NOTE_Db5  = NOTE_Cs5,
+  NOTE_D5   = 74,
+  NOTE_Ds5  = 75,
+  NOTE_Eb5  = NOTE_Ds5,
+  NOTE_E5   = 76,
+  NOTE_F5   = 77,
+  NOTE_Fs5  = 78,
+  NOTE_Gb5  = NOTE_Fs5,
+  NOTE_G5   = 79,
+  NOTE_Gs5  = 80,
+  NOTE_Ab5  = NOTE_Gs5,
+  NOTE_A5   = 81,
+  NOTE_As5  = 82,
+  NOTE_Bb5  = NOTE_As5,
+  NOTE_B5   = 83,
+  NOTE_C6   = 84,
+  NOTE_Cs6  = 85,
+  NOTE_Db6  = NOTE_Cs6,
+  NOTE_D6   = 86,
+  NOTE_Ds6  = 87,
+  NOTE_Eb6  = NOTE_Ds6,
+  NOTE_E6   = 88,
+  NOTE_F6   = 89,
+  NOTE_Fs6  = 90,
+  NOTE_Gb6  = NOTE_Fs6,
+  NOTE_G6   = 91,
+  NOTE_Gs6  = 92,
+  NOTE_Ab6  = NOTE_Gs6,
+  NOTE_A6   = 93,
+  NOTE_As6  = 94,
+  NOTE_Bb6  = NOTE_As6,
+  NOTE_B6   = 95,
+  NOTE_C7   = 96,
+  NOTE_Cs7  = 97,
+  NOTE_Db7  = NOTE_Cs7,
+  NOTE_D7   = 98,
+  NOTE_Ds7  = 99,
+  NOTE_Eb7  = NOTE_Ds7,
+  NOTE_E7   = 100,
+  NOTE_F7   = 101,
+  NOTE_Fs7  = 102,
+  NOTE_Gb7  = NOTE_Fs7,
+  NOTE_G7   = 103,
+  NOTE_Gs7  = 104,
+  NOTE_Ab7  = NOTE_Gs7,
+  NOTE_A7   = 105,
+  NOTE_As7  = 106,
+  NOTE_Bb7  = NOTE_As7,
+  NOTE_B7   = 107,
+  NOTE_C8   = 108,
+  NOTE_Cs8  = 109,
+  NOTE_Db8  = NOTE_Cs8,
+  NOTE_D8   = 110,
+  NOTE_Ds8  = 111,
+  NOTE_Eb8  = NOTE_Ds8,
+  NOTE_E8   = 112,
+  NOTE_F8   = 113,
+  NOTE_Fs8  = 114,
+  NOTE_Gb8  = NOTE_Fs8,
+  NOTE_G8   = 115,
+  NOTE_Gs8  = 116,
+  NOTE_Ab8  = NOTE_Gs8,
+  NOTE_A8   = 117,
+  NOTE_As8  = 118,
+  NOTE_Bb8  = NOTE_As8,
+  NOTE_B8   = 119,
+  NOTE_C9   = 120,
+  NUM_NOTES
+} Note;
+
+#endif
