@@ -5,9 +5,6 @@
 #include <signal.h>
 #include "utils/midi.h"
 
-static snd_seq_t *seq;
-static snd_seq_addr_t *ports;
-
 static void usage(void)
 {
   fprintf(stderr, "usage: ./synth [options]\n");
@@ -61,9 +58,9 @@ int main(int argc,char** argv)
   }
 
   // INITIALIZE
-  err = initSynthController(&synth_ctl, synth_init_data);
+  err = init_synth_controller(&synth_ctl, synth_init_data);
 
-  err = initMidiController(midi_ctl, midi_init_data);
+  err = init_midi_controller(midi_ctl, midi_init_data);
   if (err < 0) {
     fprintf(stderr, "Failed to initialize MidiController struct. Exiting\n");
     return -1;
@@ -109,11 +106,11 @@ int main(int argc,char** argv)
       if (length == 0) { continue; }
     }
 
-    err = parseMidiBuffer(midi_ctl, buf);
+    err = parse_midi_buffer(midi_ctl, buf);
     if (err < 1) { 
       continue; 
     } else {
-      err = dispatchCurrentBuffer(&synth_ctl);
+      err = dispatch_current_buffer(&synth_ctl);
     }
 
     fflush(stdout);

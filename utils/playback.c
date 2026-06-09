@@ -20,7 +20,7 @@ C8_Hz,Cs8_Hz,D8_Hz,Ds8_Hz,E8_Hz,F8_Hz,Fs8_Hz,G8_Hz,Gs8_Hz,A8_Hz,As8_Hz,B8_Hz,
 C9_Hz
 };
 
-int initSynthController(SynthController *synth_ctl, synthInitData init_data)
+int init_synth_controller(SynthController *synth_ctl, synthInitData init_data)
 {
   synth_ctl->synth_cdata.env_attack_buf = SAMPLE_RATE * init_data.env_attack_ms / 1000;
   synth_ctl->synth_cdata.env_release_buf = SAMPLE_RATE * init_data.env_release_ms / 1000;
@@ -39,23 +39,23 @@ int initSynthController(SynthController *synth_ctl, synthInitData init_data)
   return 1;
 }
 
-int dispatchCurrentBuffer(SynthController *synth_ctl)
+int dispatch_current_buffer(SynthController *synth_ctl)
 {
   MidiController *this_midi_ctl = synth_ctl->midi_ctl;
   MidiMsg *cur_msg = &(this_midi_ctl->midi_buffer[this_midi_ctl->buf_iter_idx]);
   switch (cur_msg->msg_type) {
     case ChanNoteOff:
-      dispatchNoteOff(synth_ctl, cur_msg);
+      dispatch_note_off(synth_ctl, cur_msg);
       break;
     case ChanNoteOn:
-      dispatchNoteOn(synth_ctl, cur_msg);
+      dispatch_note_on(synth_ctl, cur_msg);
       break;
     default:
       return 0;
   }
 }
 
-void dispatchNoteOn(SynthController *synth_ctl, MidiMsg* msg)
+void dispatch_note_on(SynthController *synth_ctl, MidiMsg* msg)
 {
   synthNote* note = &(synth_ctl->notes[msg->data_buf[0]]);
   u8 velocity = msg->data_buf[1];
@@ -74,7 +74,7 @@ void dispatchNoteOn(SynthController *synth_ctl, MidiMsg* msg)
   }
 }
 
-void dispatchNoteOff(SynthController *synth_ctl, MidiMsg* msg)
+void dispatch_note_off(SynthController *synth_ctl, MidiMsg* msg)
 {
   synthNote* note = &(synth_ctl->notes[msg->data_buf[0]]);
   u8 velocity = msg->data_buf[1];
@@ -87,7 +87,7 @@ void dispatchNoteOff(SynthController *synth_ctl, MidiMsg* msg)
 }
 
 /// Get the s16 amplitude value for a note at a given time domain value t
-s16 playNote(synthNote* note, double t, synthCommonData* cdata)
+s16 play_note(synthNote* note, double t, synthCommonData* cdata)
 {
   /// We need to consider envelope regardless of waveform, so do that first
   double amplitude_factor;
@@ -109,7 +109,7 @@ s16 playNote(synthNote* note, double t, synthCommonData* cdata)
   /// 
   switch (cdata->wave_type) {
     case SawtoothWave:
-      return playSawtooth(note, t, amplitude_factor);
+      return play_sawtooth(note, t, amplitude_factor);
     default:
       return 0;
   }
@@ -118,7 +118,7 @@ s16 playNote(synthNote* note, double t, synthCommonData* cdata)
 }
 
 /// Get the s16 amplitude value for a sawtooth wave at a given time domain value t
-s16 playSawtooth(synthNote* note, double t, double amplitude_factor)
+s16 play_sawtooth(synthNote* note, double t, double amplitude_factor)
 {
   amplitude_f = 2 * (t/note->freq - floor(0.5 + t/note->freq));
   return (s16)(amplitude_factor * amplitude_f);

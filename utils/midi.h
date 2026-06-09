@@ -54,11 +54,11 @@ typedef struct MidiController {
   int npfds;
 } MidiController;
 
-int initMidiController(MidiController *midi_ctl, midiInitData init_data);
+int init_midi_controller(MidiController *midi_ctl, midiInitData init_data);
 
-int parseMidiBuffer(MidiController *midi_ctl, unsigned char *buf);
+int fetch_midi_message(MidiController *midi_ctl);
+int parse_midi_buffer(MidiController *midi_ctl, unsigned char *buf);
 
 void print_midi_msg(unsigned char *buf);
-const char* fmt_status_byte(unsigned char buf);
 
 #endif

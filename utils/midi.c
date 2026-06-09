@@ -1,6 +1,6 @@
 #include "midi.h"
 
-int initMidiController(MidiController *midi_ctl, midiInitData init_data)
+int init_midi_controller(MidiController *midi_ctl, midiInitData init_data)
 {
   midi_ctl->midi_data.flags = init_data.flags;
   snd_rawmidi_t *midi_in = midi_ctl->hdl;
@@ -26,7 +26,7 @@ int initMidiController(MidiController *midi_ctl, midiInitData init_data)
   }
 }
 
-int parseMidiBuffer(MidiController *midi_ctl, unsigned char *buf) {
+int parse_midi_buffer(MidiController *midi_ctl, unsigned char *buf) {
   midi_ctl->buf_iter_idx = (midi_ctl->buf_iter_idx + 1) % 64;
   MidiMsg *midi_msg = &(midi_ctl->midi_buffer[midi_ctl->buf_iter_idx]);
   midi_msg->status_byte = buf[0];

@@ -47,22 +47,22 @@ typedef struct SynthController {
   synthCommonData synth_cdata;
 } synthController;
 
-int initSynthController(SynthController *synth_ctl, synthInitData init_data);
+int init_synth_controller(SynthController *synth_ctl, synthInitData init_data);
 
-int dispatchCurrentBuffer(SynthController *synth_ctl);
-void dispatchNoteOn(SynthController *synth_ctl, MidiMsg* msg);
-void dispatchNoteOff(SynthController *synth_ctl, MidiMsg* msg);
-//void dispatchKeyPressure(MidiMsg* msg);
-//void dispatchControlChange(MidiMsg* msg);
-//void dispatchChannelMode(MidiMsg* msg);
-//void dispatchProgramChange(MidiMsg* msg);
-//void dispatchChannelPressure(MidiMsg* msg);
-//void dispatchPitchBend(MidiMsg* msg);
+int dispatch_current_buffer(SynthController *synth_ctl);
+void dispatch_note_on(SynthController *synth_ctl, MidiMsg* msg);
+void dispatch_note_off(SynthController *synth_ctl, MidiMsg* msg);
+//void dispatch_key_pressure(MidiMsg* msg);
+//void dispatch_control_change(MidiMsg* msg);
+//void dispatch_channel_mode(MidiMsg* msg);
+//void dispatch_program_change(MidiMsg* msg);
+//void dispatch_channel_pressure(MidiMsg* msg);
+//void dispatch_pitch_bend(MidiMsg* msg);
 
-s16 playNote(synthNote* note, double t, synthCommonData* cdata);
-s16 playSawtooth(synthNote* note, double t, double amplitude_factor);
-//s16 playSine(synthNote* note, double t, double amplitude_factor);
-//s16 playSquare(synthNote* note, double t, double amplitude_factor);
-//s16 playTriangle(synthNote* note, double t, double amplitude_factor);
+s16 play_note(synthNote* note, double t, synthCommonData* cdata);
+s16 play_sawtooth(synthNote* note, double t, double amplitude_factor);
+//s16 play_sine(synthNote* note, double t, double amplitude_factor);
+//s16 play_square(synthNote* note, double t, double amplitude_factor);
+//s16 play_triangle(synthNote* note, double t, double amplitude_factor);
 
 #endif
