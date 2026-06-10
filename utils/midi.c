@@ -5,25 +5,66 @@ int init_midi_controller(MidiController *midi_ctl, midiInitData init_data)
   midi_ctl->midi_data.flags = init_data.flags;
   snd_rawmidi_t *midi_in = midi_ctl->hdl;
 
-  err = snd_rawmidi_open(&midi_in,NULL,init_data.devname,SND_RAWMIDI_NONBLOCK);
+  int err = snd_rawmidi_open(&midi_ctl->hdl,NULL,init_data.devname,SND_RAWMIDI_NONBLOCK);
   if (err < 0) {
     fprintf(stderr, "Failed to open rawmidi\n");
     return -1;
   }
 
-  if (midi_in) {
-    snd_rawmidi_read(midi_in, NULL, 0);
+  if (midi_ctl->hdl) {
+    snd_rawmidi_read(midi_ctl->hdl, NULL, 0);
 
-    midi_ctl->npfds = 1 + snd_rawmidi_poll_descriptors_count(midi_in);
+    midi_ctl->npfds = 1 + snd_rawmidi_poll_descriptors_count(midi_ctl->hdl);
     midi_ctl->pfds = alloca(midi_ctl->npfds * sizeof(struct pollfd));
-    midit_ctl->pfds[0].fd = -1;
+    midi_ctl->pfds[0].fd = -1;
 
-    snd_rawmidi_poll_descriptors(midi_in, &(midi_ctl->pfds[1]), midi_ctl->npfds - 1);
+    snd_rawmidi_poll_descriptors(midi_ctl->hdl, &(midi_ctl->pfds[1]), midi_ctl->npfds - 1);
   }
   else {
     fprintf(stderr, "Handle doesn't exist\n");
     return -1;
   }
+  fprintf(stdout, "MidiController initialized\n");
+}
+
+int fetch_midi_message(MidiController *midi_ctl, unsigned char *buf)
+{
+  int length, err;
+  unsigned short revents;
+  struct timespec ts;
+  clockid_t cid = CLOCK_REALTIME;
+
+  /*err = poll(midi_ctl->pfds, midi_ctl->npfds, -1);
+
+  if (clock_gettime(cid, &ts) < 0) {
+    fprintf(stderr, "clock_getres (%d) failed: %s", cid, strerror(errno));
+    return -1;
+  }
+
+  err = snd_rawmidi_poll_descriptors_revents(midi_ctl->hdl, 
+      &midi_ctl->pfds[1], midi_ctl->npfds - 1, &revents);
+  if (revents & (POLLERR | POLLHUP))
+    return -1;
+  if (!(revents & POLLIN)) {
+    if (midi_ctl->pfds[0].revents & POLLIN)
+      return -1;
+    return 0;
+  }*/
+
+  err = snd_rawmidi_read(midi_ctl->hdl, buf, sizeof(buf));
+  if (err == -EAGAIN)
+    return 0;
+  if (err < 0) {
+    fprintf(stderr, "read error: %d - %s\n", (int)err, snd_strerror(err));
+    return -1;
+  }
+
+  length = 0;
+  for (int i = 0; i < err; i++) {
+    if (buf[i] != MIDI_CMD_COMMON_CLOCK && buf[i] != MIDI_CMD_COMMON_SENSING)
+      buf[length++] = buf[i];
+  }
+  return 1;
 }
 
 int parse_midi_buffer(MidiController *midi_ctl, unsigned char *buf) {
@@ -47,55 +88,55 @@ int parse_midi_buffer(MidiController *midi_ctl, unsigned char *buf) {
       midi_msg->num_data_bytes = 2;
       midi_msg->channel = (midi_msg->status_byte & STATUS_BYTE_CHANNEL_MASK);
       break;
-    /*case STATUS_BYTE_KEY_AFTERTOUCH:
-      midi_msg->msg_type = ChanKeyPressure;
-      midi_msg->data_buf[0] = buf[1];
-      midi_msg->data_buf[1] = buf[2];
-      midi_msg->num_data_bytes = 2;
-      midi_msg->channel = (midi_msg->status_byte & STATUS_BYTE_CHANNEL_MASK);
-      break;
-    case STATUS_BYTE_CONTROL_CHANGE:
-      midi_msg->data_buf[0] = buf[1];
-      midi_msg->data_buf[1] = buf[2];
-      midi_msg->num_data_bytes = 2;
-      midi_msg->channel = (midi_msg->status_byte & STATUS_BYTE_CHANNEL_MASK);
-      if (midi_msg->data_buf[0] < 120) {
+      /*case STATUS_BYTE_KEY_AFTERTOUCH:
+        midi_msg->msg_type = ChanKeyPressure;
+        midi_msg->data_buf[0] = buf[1];
+        midi_msg->data_buf[1] = buf[2];
+        midi_msg->num_data_bytes = 2;
+        midi_msg->channel = (midi_msg->status_byte & STATUS_BYTE_CHANNEL_MASK);
+        break;
+        case STATUS_BYTE_CONTROL_CHANGE:
+        midi_msg->data_buf[0] = buf[1];
+        midi_msg->data_buf[1] = buf[2];
+        midi_msg->num_data_bytes = 2;
+        midi_msg->channel = (midi_msg->status_byte & STATUS_BYTE_CHANNEL_MASK);
+        if (midi_msg->data_buf[0] < 120) {
         midi_msg->msg_type = ChanControlChange;
-      } else if (midi_msg->data_buf[0] <= 127) {
+        } else if (midi_msg->data_buf[0] <= 127) {
         midi_msg->msg_type = ChanChannelMode;
-      } else {
+        } else {
         fprintf(stderr, "Data byte payload invalid\n");
         return -1;
-      }
-      break;
-    case STATUS_BYTE_PROGRAM_CHANGE:
-      midi_msg->msg_type = ChanProgramChange;
-      midi_msg->data_buf[0] = buf[1];
-      midi_msg->num_data_bytes = 1;
-      midi_msg->channel = (midi_msg->status_byte & STATUS_BYTE_CHANNEL_MASK);
-      break;
-    case STATUS_BYTE_CHANNEL_AFTERTOUCH:
-      midi_msg->msg_type = ChanChannelPressure;
-      midi_msg->data_buf[0] = buf[1];
-      midi_msg->num_data_bytes = 1;
-      midi_msg->channel = (midi_msg->status_byte & STATUS_BYTE_CHANNEL_MASK);
-      break;
-    case STATUS_BYTE_PITCH_BEND:
-      midi_msg->msg_type = ChanPitchBend;
-      midi_msg->data_buf[0] = buf[1];
-      midi_msg->data_buf[1] = buf[2];
-      midi_msg->num_data_bytes = 2;
-      midi_msg->channel = (midi_msg->status_byte & STATUS_BYTE_CHANNEL_MASK);
-      break;
-  // F0H -> system message
-  //  1111 0000 -> sys exclusive, arbitrary length
-  //  1111 0xxx -> sys common, 0 to 2 data bytes
-  //  1111 1xxx -> sys real time, 0 data byte
-    case STATUS_BYTE_SYSTEM_MESSAGE:
+        }
+        break;
+        case STATUS_BYTE_PROGRAM_CHANGE:
+        midi_msg->msg_type = ChanProgramChange;
+        midi_msg->data_buf[0] = buf[1];
+        midi_msg->num_data_bytes = 1;
+        midi_msg->channel = (midi_msg->status_byte & STATUS_BYTE_CHANNEL_MASK);
+        break;
+        case STATUS_BYTE_CHANNEL_AFTERTOUCH:
+        midi_msg->msg_type = ChanChannelPressure;
+        midi_msg->data_buf[0] = buf[1];
+        midi_msg->num_data_bytes = 1;
+        midi_msg->channel = (midi_msg->status_byte & STATUS_BYTE_CHANNEL_MASK);
+        break;
+        case STATUS_BYTE_PITCH_BEND:
+        midi_msg->msg_type = ChanPitchBend;
+        midi_msg->data_buf[0] = buf[1];
+        midi_msg->data_buf[1] = buf[2];
+        midi_msg->num_data_bytes = 2;
+        midi_msg->channel = (midi_msg->status_byte & STATUS_BYTE_CHANNEL_MASK);
+        break;
+      // F0H -> system message
+      //  1111 0000 -> sys exclusive, arbitrary length
+      //  1111 0xxx -> sys common, 0 to 2 data bytes
+      //  1111 1xxx -> sys real time, 0 data byte
+      case STATUS_BYTE_SYSTEM_MESSAGE:
       printf("System message received\n");
       return 0;*/
     default:
-      return -1;
+      return 0;
   }
 
   return 1;
@@ -124,5 +165,5 @@ void print_midi_msg(unsigned char *buf)
       snprintf(status, sizeof(status), "%s", "DEFAULT");
       break;
   }
-  printf("Status Byte: %s\n", status);
+  fprintf(stdout, "Status Byte: %s\n", status);
 }

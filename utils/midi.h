@@ -56,7 +56,7 @@ typedef struct MidiController {
 
 int init_midi_controller(MidiController *midi_ctl, midiInitData init_data);
 
-int fetch_midi_message(MidiController *midi_ctl);
+int fetch_midi_message(MidiController *midi_ctl, unsigned char *buf);
 int parse_midi_buffer(MidiController *midi_ctl, unsigned char *buf);
 
 void print_midi_msg(unsigned char *buf);

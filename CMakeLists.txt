@@ -8,15 +8,13 @@ find_package(portaudio REQUIRED)
 
 set(SYNTH_SRC 
   utils/midi.c 
-  #utils/music_utils.c
-  #utils/wav_utils.c
+  utils/synth.c
 )
 set(SYNTH_HEADERS 
   utils/midi.h 
   utils/midi_lut.h 
-  #utils/music_utils.h 
-  #utils/music_tbls.h
-  #utils/wav_utils.h
+  utils/note_lut.h
+  utils/synth.h
 )
 
 add_library(synthlib STATIC ${SYNTH_HEADERS} ${SYNTH_SRC})

@@ -1,15 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <time.h>
 #include <alsa/asoundlib.h>
 #include <signal.h>
 #include "utils/midi.h"
+#include "utils/synth.h"
+
+static volatile sig_atomic_t stop = 0;
 
 static void usage(void)
 {
   fprintf(stderr, "usage: ./synth [options]\n");
   fprintf(stderr, "  options:\n");
   fprintf(stderr, "  --help               : prints this message\n");
+  fprintf(stderr, "  --midi-device DEVICE : specifies device for raw MIDI input\n");
+  fprintf(stderr, "               example : ./synth --midi-device hw:1,0,0\n");
 }
 
 static void checkerr(const char *fn, int err)
@@ -18,6 +25,11 @@ static void checkerr(const char *fn, int err)
     fprintf(stderr, "%s failed\n", fn);
     exit(0);
   }
+}
+
+static void sighandler(int sig ATTRIBUTE_UNUSED)
+{
+  stop = 1;
 }
 
 int main(int argc,char** argv)
@@ -29,7 +41,6 @@ int main(int argc,char** argv)
     .wave_type = SawtoothWave,
     .env_attack_ms = 10,
     .env_release_ms = 10,
-    .max_amplitude = 16384,
     .flags = 0
   };
 
@@ -38,7 +49,6 @@ int main(int argc,char** argv)
     .devname = "default",
     .flags = 0
   };
-  snd_rawmidi_t *midi_in = midi_ctl->hdl;
   clockid_t cid = CLOCK_REALTIME;
 
   for (int i=1; i<argc; i++) {
@@ -46,16 +56,19 @@ int main(int argc,char** argv)
     if (strcmp(arg, "--help") == 0) {
       usage();
       exit(0);
-    } else if (strcmp(arg, "--device") == 0) {
+    } else if (strcmp(arg, "--midi-device") == 0) {
       if ((i+1) == argc) {
-        fprintf(stderr, "must supply device handle for --device flag\n");
+        fprintf(stderr, "must supply device handle for --midi-device flag\n");
         exit(0);
       }
       strncpy(midi_init_data.devname, argv[i+1], sizeof(midi_init_data.devname));
-      printf("Using device at MIDI: %s\n", midi_init_data.devname);
+      fprintf(stdout, "Using device at MIDI: %s\n", midi_init_data.devname);
       do_device = 1;
     }
   }
+
+  signal(SIGINT, sighandler);
+  signal(SIGTERM, sighandler);
 
   // INITIALIZE
   err = init_synth_controller(&synth_ctl, synth_init_data);
@@ -65,61 +78,45 @@ int main(int argc,char** argv)
     fprintf(stderr, "Failed to initialize MidiController struct. Exiting\n");
     return -1;
   }
+  
+  u32 num_fails = 0;
 
-  for (;;) {
-    unsigned char buf[256];
-    int i, length;
-    unsigned short revents;
-    struct timespec ts;
-
-    err = poll(midi_ctl->pfds, midi_ctl->npfds, -1);
-    checkerr("poll", err);
-
-    /*if (clock_gettime(cid, &ts) < 0) {
-      fprintf(stderr, "clock_getres (%d) failed: %s", cid, strerror(errno));
-      break;
-    }
-
-    err = snd_rawmidi_poll_descriptors_revents(midi_in, &pfds[1], npfds - 1, &revents);
-    checkerr("snd_rawmidi_poll_descriptors_revents", err);
-    if (revents & (POLLERR | POLLHUP))
-      break;
-
-    if (!(revents & POLLIN)) {
-      if (pfds[0].revents & POLLIN)
-        break;
-      continue;
-    }*/
-
-    err = snd_rawmidi_read(midi_in, buf, sizeof(buf));
-    if (err == -EAGAIN)
-      continue;
+  while (!stop) {
+    unsigned char buf[64];
+    err = fetch_midi_message(midi_ctl, buf);
     if (err < 0) {
-      fprintf(stderr, "read error: %d - %s\n", (int)err, snd_strerror(err));
+      fprintf(stderr, "Fatal error occurred\n");
       break;
-    }
-
-    length = 0;
-    for (i = 0; i < err; i++) {
-      if (buf[i] != MIDI_CMD_COMMON_CLOCK && buf[i] != MIDI_CMD_COMMON_SENSING)
-        buf[length++] = buf[i];
-      if (length == 0) { continue; }
+    } else if (err == 0) {
+      //fprintf(stderr, "%d: No message fetched, continuing...\n", num_fails++);
+      usleep(10000);
+      continue;
     }
 
     err = parse_midi_buffer(midi_ctl, buf);
-    if (err < 1) { 
+    if (err < 0) { 
+      //fprintf(stderr, "error occurred parsing midi buffer, continuing\n");
+      usleep(10000);
       continue; 
     } else {
       err = dispatch_current_buffer(&synth_ctl);
     }
 
     fflush(stdout);
+    
+    usleep(10000);
+  }
+  
+  fprintf(stdout, "Left main loop\n");
+  fflush(stdout);
+  fflush(stderr);
+
+  if (midi_ctl->hdl) {
+    snd_rawmidi_drain(midi_ctl->hdl);
+    snd_rawmidi_close(midi_ctl->hdl);
   }
 
-  if (midi_in) {
-    snd_rawmidi_drain(midi_in);
-    snd_rawmidi_close(midi_in);
-  }
+  fprintf(stdout, "Exiting!\n");
 
   return 0;
 }
