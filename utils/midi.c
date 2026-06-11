@@ -23,7 +23,6 @@ int init_midi_controller(MidiController *midi_ctl, midiInitData init_data)
 int fetch_midi_message(MidiController *midi_ctl, unsigned char *buf)
 {
   int length, err;
-  clockid_t cid = CLOCK_REALTIME;
 
   err = snd_rawmidi_read(midi_ctl->hdl, buf, sizeof(buf));
   if (err == -EAGAIN)
