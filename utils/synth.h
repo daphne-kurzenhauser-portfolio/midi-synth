@@ -6,8 +6,8 @@
 #include <time.h>
 #include "midi.h"
 #include "note_lut.h"
+#include "playback.h"
 
-#define SAMPLE_RATE         48000
 #define HALF_AMPLITUDE      16384.0f
 #define QUARTER_AMPLITUDE   8192.0f
 #define EIGHTH_AMPLITUDE    4096.0f
@@ -43,6 +43,7 @@ typedef struct synthNote {
 
 typedef struct SynthController {
   MidiController midi_ctl;
+  PlaybackController playback_ctl;
   synthNote notes[121];
   synthCommonData synth_cdata;
 } SynthController;
@@ -59,10 +60,11 @@ void dispatch_note_off(SynthController *synth_ctl, MidiMsg* msg);
 //void dispatch_channel_pressure(MidiMsg* msg);
 //void dispatch_pitch_bend(MidiMsg* msg);
 
-s16 play_note(synthNote* note, double t, synthCommonData* cdata);
-s16 play_sawtooth(synthNote* note, double t, double amplitude_factor);
-//s16 play_sine(synthNote* note, double t, double amplitude_factor);
-//s16 play_square(synthNote* note, double t, double amplitude_factor);
-//s16 play_triangle(synthNote* note, double t, double amplitude_factor);
+u32 build_sample_buf(SynthController *synth_ctl);
+s16 new_note_sample(synthNote* note, double t, synthCommonData* cdata);
+s16 new_sample_sawtooth(synthNote* note, double t, double amplitude_factor);
+//s16 new_sample_sine(synthNote* note, double t, double amplitude_factor);
+//s16 new_sample_square(synthNote* note, double t, double amplitude_factor);
+//s16 new_sample_triangle(synthNote* note, double t, double amplitude_factor);
 
 #endif

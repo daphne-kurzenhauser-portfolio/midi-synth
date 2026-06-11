@@ -5,6 +5,7 @@
 #include <time.h>
 #include <alsa/asoundlib.h>
 #include <signal.h>
+#include "portaudio.h"
 #include "utils/midi.h"
 #include "utils/synth.h"
 
@@ -32,6 +33,37 @@ static void sighandler(int sig ATTRIBUTE_UNUSED)
   stop = 1;
 }
 
+typedef struct {
+  u32 phase;
+  synthNote (*notes)[121];
+  synthCommonData* synth_cdata;
+} callbackData;
+
+static int paCallback(const void *inputBuffer, void *outputBuffer,
+                      unsigned long framesPerBuffer,
+                      const PaStreamCallbackTimeInfo* timeInfo,
+                      const PaStreamCallbackFlags statusFlags,
+                      void *userData)
+{
+  callbackData *data = (callbackData*)userData;
+  s16 *out = (s16*)outputBuffer;
+  double t;
+
+  for (int i=0; i<framesPerBuffer; i++) {
+    out[i] = 0;
+    t = (double)data->phase / SAMPLE_RATE;
+    for (int midi_note=0; midi_note<121; midi_note++) {
+      synthNote* note = &((*data->notes)[midi_note]);
+      if (note->isOn) {
+        out[i] += new_note_sample(note, t, data->synth_cdata);
+      }
+    }
+    data->phase++;
+  }
+  return 0;
+}
+
+static callbackData data;
 int main(int argc,char** argv)
 {
   int err;
@@ -49,7 +81,7 @@ int main(int argc,char** argv)
     .devname = "default",
     .flags = 0
   };
-  clockid_t cid = CLOCK_REALTIME;
+  //clockid_t cid = CLOCK_REALTIME;
 
   for (int i=1; i<argc; i++) {
     const char *arg = argv[i];
@@ -78,8 +110,24 @@ int main(int argc,char** argv)
     fprintf(stderr, "Failed to initialize MidiController struct. Exiting\n");
     return -1;
   }
-  
-  u32 num_fails = 0;
+
+  PaStream *stream;
+  data.notes = &(synth_ctl.notes);
+  data.synth_cdata = &(synth_ctl.synth_cdata);
+  PaError pa_err = Pa_Initialize();
+
+  pa_err = Pa_OpenDefaultStream(&stream,
+      0,
+      1,
+      paInt16,
+      SAMPLE_RATE,
+      SAMPLES_PER_BUF,
+      paCallback,
+      &data);
+  if (pa_err != paNoError) goto error;
+
+  pa_err = Pa_StartStream(stream);
+  if (pa_err != paNoError) goto error;
 
   while (!stop) {
     unsigned char buf[64];
@@ -87,36 +135,33 @@ int main(int argc,char** argv)
     if (err < 0) {
       fprintf(stderr, "Fatal error occurred\n");
       break;
-    } else if (err == 0) {
-      //fprintf(stderr, "%d: No message fetched, continuing...\n", num_fails++);
-      usleep(10000);
-      continue;
+    } else if (err > 0) {
+      err = parse_midi_buffer(midi_ctl, buf);
+      if (err > 0) { 
+        err = dispatch_current_buffer(&synth_ctl);
+      }
     }
-
-    err = parse_midi_buffer(midi_ctl, buf);
-    if (err < 0) { 
-      //fprintf(stderr, "error occurred parsing midi buffer, continuing\n");
-      usleep(10000);
-      continue; 
-    } else {
-      err = dispatch_current_buffer(&synth_ctl);
-    }
-
-    fflush(stdout);
-    
-    usleep(10000);
   }
-  
+
   fprintf(stdout, "Left main loop\n");
-  fflush(stdout);
-  fflush(stderr);
 
   if (midi_ctl->hdl) {
     snd_rawmidi_drain(midi_ctl->hdl);
     snd_rawmidi_close(midi_ctl->hdl);
   }
 
+  pa_err = Pa_StopStream(stream);
+  if (pa_err != paNoError) goto error;
+  pa_err = Pa_CloseStream(stream);
+  if (pa_err != paNoError) goto error;
+  Pa_Terminate();
+
   fprintf(stdout, "Exiting!\n");
 
   return 0;
+
+error:
+  fprintf(stderr, "Error occured with PortAudio: %s\n", Pa_GetErrorText(err));
+  Pa_Terminate();
+  return -1;
 }
