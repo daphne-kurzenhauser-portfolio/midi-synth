@@ -71,3 +71,10 @@ sample values; however, the actual invocation of this is done through a PortAudi
 
 ### Fixes and Improvements
 
+- Equalize amplitudes for multi-note polyphony
+- Sine wave has weird hiss/click at start of note (phase issue in time domain, most likely)
+- Implement separate MIDI channels
+- Implement velocity-determined release envelope
+- Implement full ADSR envelope
+- Implement additional MIDI message types--e.g. channel modes, pitch bending, control changes
+- Enable automatic MIDI device discovery
