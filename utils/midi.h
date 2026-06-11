@@ -37,9 +37,9 @@ typedef struct midiCommonData {
 } midiCommonData;
 
 typedef struct MidiMsg {
-  msgType msg_type;           ///< message type
+  msgType msg_type;                       ///< message type
   unsigned char status_byte;
-  unsigned char data_buf[2];             ///< buffer of data bytes
+  unsigned char data_buf[2];              ///< buffer of data bytes
   int num_data_bytes;
   u8 channel; 
   midiCommonData *mididata;

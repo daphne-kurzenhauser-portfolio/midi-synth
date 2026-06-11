@@ -6,6 +6,8 @@
 #include "note_lut.h"
 #include "synth.h"
 
+const double PI = 3.141592653589793;
+
 const double hz_lut[121] = {  
   1.0,  1.0,   1.0,  1.0,   1.0,  1.0,  1.0,   1.0,  1.0,   1.0,  1.0,   1.0,
   C0_Hz,Cs0_Hz,D0_Hz,Ds0_Hz,E0_Hz,F0_Hz,Fs0_Hz,G0_Hz,Gs0_Hz,A0_Hz,As0_Hz,B0_Hz,
@@ -64,7 +66,6 @@ void dispatch_note_on(SynthController *synth_ctl, MidiMsg* msg)
 
   if (velocity > 0) {
     if (note->isOn) {
-      //fprintf(stdout, "Note already on, ignoring\n");
       return;
     }
     note->peak_amplitude = synth_ctl->synth_cdata.max_amplitude * pow((velocity/127.0), 2.0);
@@ -81,35 +82,13 @@ void dispatch_note_off(SynthController *synth_ctl, MidiMsg* msg)
 {
   synthNote* note = &(synth_ctl->notes[msg->data_buf[0]]);
   u8 velocity = msg->data_buf[1];
-
-  if (!note->isOn) {
-    //fprintf(stdout, "Note already off, ignoring\n");
-    return;
+  if (!note->isOn) { 
+    return; 
   }
   note->release_buf_rem = synth_ctl->synth_cdata.env_release_buf;
   fprintf(stdout, "NOTE OFF: release %d\n", note->release_buf_rem);
 }
 
-u32 build_sample_buf(SynthController *synth_ctl)
-{
-  double t;
-  PlaybackController *player = &(synth_ctl->playback_ctl);
-  for (int i=0; i<SAMPLES_PER_BUF; i++) {
-    player->playback_buf[i] = 0;
-    t = (double)player->phase / SAMPLE_RATE;
-    for (int midi_note=0; midi_note<121; midi_note++) {
-      synthNote* note = &(synth_ctl->notes[midi_note]);
-      if (note->isOn) {
-        player->playback_buf[i] += new_note_sample(note, t, &(synth_ctl->synth_cdata));
-      }
-    }
-    player->phase++;
-    //printf("%d ", player->playback_buf[i]);
-  }
-  write_frame(player);
-  fflush(stdout);
-  return SAMPLES_PER_BUF;
-}
 
 /// Get the s16 amplitude value for a note at a given time domain value t
 s16 new_note_sample(synthNote* note, double t, synthCommonData* cdata)
@@ -131,15 +110,14 @@ s16 new_note_sample(synthNote* note, double t, synthCommonData* cdata)
   }
   amplitude_factor = amplitude_factor * note->peak_amplitude;
 
-  /// 
   switch (cdata->wave_type) {
     case SawtoothWave:
       return new_sample_sawtooth(note, t, amplitude_factor);
+    case SineWave:
+      return new_sample_sine(note, t, amplitude_factor);
     default:
       return 0;
   }
-
-  return 0;
 }
 
 /// Get the s16 amplitude value for a sawtooth wave at a given time domain value t
@@ -148,4 +126,11 @@ s16 new_sample_sawtooth(synthNote* note, double t, double amplitude_factor)
   double freq = 1 / (note->freq);
   double amplitude_f = 2 * (t/freq - floor(0.5 + t/freq));
   return (s16)(amplitude_factor * amplitude_f);
+}
+
+s16 new_sample_sine(synthNote* note, double t, double amplitude_factor)
+{
+  //double angle = (2 * PI / note->freq) * ((int)(t * SAMPLE_RATE) % (int)note->freq);
+  double angle = (2 * PI / (1 / note->freq)) * t;
+  return (s16)(amplitude_factor * sin(angle));
 }

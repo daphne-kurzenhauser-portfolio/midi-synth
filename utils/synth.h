@@ -6,7 +6,10 @@
 #include <time.h>
 #include "midi.h"
 #include "note_lut.h"
-#include "playback.h"
+
+#define SAMPLE_RATE         48000
+#define LATENCY_MS          10
+#define SAMPLES_PER_BUF     (SAMPLE_RATE * LATENCY_MS / 1000)
 
 #define HALF_AMPLITUDE      16384.0f
 #define QUARTER_AMPLITUDE   8192.0f
@@ -30,7 +33,6 @@ typedef struct synthCommonData {
   u8 flags;
 } synthCommonData;
 
-
 ///
 typedef struct synthNote {
   Note midi_note;
@@ -43,7 +45,6 @@ typedef struct synthNote {
 
 typedef struct SynthController {
   MidiController midi_ctl;
-  PlaybackController playback_ctl;
   synthNote notes[121];
   synthCommonData synth_cdata;
 } SynthController;
@@ -60,10 +61,9 @@ void dispatch_note_off(SynthController *synth_ctl, MidiMsg* msg);
 //void dispatch_channel_pressure(MidiMsg* msg);
 //void dispatch_pitch_bend(MidiMsg* msg);
 
-u32 build_sample_buf(SynthController *synth_ctl);
 s16 new_note_sample(synthNote* note, double t, synthCommonData* cdata);
 s16 new_sample_sawtooth(synthNote* note, double t, double amplitude_factor);
-//s16 new_sample_sine(synthNote* note, double t, double amplitude_factor);
+s16 new_sample_sine(synthNote* note, double t, double amplitude_factor);
 //s16 new_sample_square(synthNote* note, double t, double amplitude_factor);
 //s16 new_sample_triangle(synthNote* note, double t, double amplitude_factor);
 
