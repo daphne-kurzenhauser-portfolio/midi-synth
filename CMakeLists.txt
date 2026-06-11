@@ -8,14 +8,12 @@ find_package(portaudio REQUIRED)
 
 set(SYNTH_SRC 
   utils/midi.c 
-  utils/playback.c
   utils/synth.c
 )
 set(SYNTH_HEADERS 
   utils/midi.h 
   utils/midi_lut.h 
   utils/note_lut.h
-  utils/playback.h
   utils/synth.h
 )
 

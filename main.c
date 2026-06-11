@@ -10,6 +10,12 @@
 #include "utils/synth.h"
 
 static volatile sig_atomic_t stop = 0;
+typedef struct {
+  u32 phase;
+  synthNote (*notes)[121];
+  synthCommonData* synth_cdata;
+} callbackData;
+static callbackData data;
 
 static void usage(void)
 {
@@ -20,24 +26,10 @@ static void usage(void)
   fprintf(stderr, "               example : ./synth --midi-device hw:1,0,0\n");
 }
 
-static void checkerr(const char *fn, int err)
-{
-  if (err < 0) {
-    fprintf(stderr, "%s failed\n", fn);
-    exit(0);
-  }
-}
-
 static void sighandler(int sig ATTRIBUTE_UNUSED)
 {
   stop = 1;
 }
-
-typedef struct {
-  u32 phase;
-  synthNote (*notes)[121];
-  synthCommonData* synth_cdata;
-} callbackData;
 
 static int paCallback(const void *inputBuffer, void *outputBuffer,
                       unsigned long framesPerBuffer,
@@ -63,7 +55,6 @@ static int paCallback(const void *inputBuffer, void *outputBuffer,
   return 0;
 }
 
-static callbackData data;
 int main(int argc,char** argv)
 {
   int err;
@@ -81,7 +72,6 @@ int main(int argc,char** argv)
     .devname = "default",
     .flags = 0
   };
-  //clockid_t cid = CLOCK_REALTIME;
 
   for (int i=1; i<argc; i++) {
     const char *arg = argv[i];
@@ -96,6 +86,8 @@ int main(int argc,char** argv)
       strncpy(midi_init_data.devname, argv[i+1], sizeof(midi_init_data.devname));
       fprintf(stdout, "Using device at MIDI: %s\n", midi_init_data.devname);
       do_device = 1;
+    } else if (strcmp(arg, "--sine") == 0) {
+      synth_init_data.wave_type = SineWave;
     }
   }
 
