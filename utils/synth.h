@@ -10,10 +10,11 @@
 #define SAMPLE_RATE         48000
 #define LATENCY_MS          10
 #define SAMPLES_PER_BUF     (SAMPLE_RATE * LATENCY_MS / 1000)
-
 #define HALF_AMPLITUDE      16384.0f
 #define QUARTER_AMPLITUDE   8192.0f
 #define EIGHTH_AMPLITUDE    4096.0f
+
+#define sgn(x) ((x > 0) - (x < 0))
 
 typedef enum { SawtoothWave, SineWave, SquareWave, TriangleWave } Wave;
 
@@ -64,7 +65,7 @@ void dispatch_note_off(SynthController *synth_ctl, MidiMsg* msg);
 s16 new_note_sample(synthNote* note, double t, synthCommonData* cdata);
 s16 new_sample_sawtooth(synthNote* note, double t, double amplitude_factor);
 s16 new_sample_sine(synthNote* note, double t, double amplitude_factor);
-//s16 new_sample_square(synthNote* note, double t, double amplitude_factor);
+s16 new_sample_square(synthNote* note, double t, double amplitude_factor);
 //s16 new_sample_triangle(synthNote* note, double t, double amplitude_factor);
 
 #endif

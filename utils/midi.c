@@ -3,8 +3,6 @@
 int init_midi_controller(MidiController *midi_ctl, midiInitData init_data)
 {
   midi_ctl->midi_data.flags = init_data.flags;
-  snd_rawmidi_t *midi_in = midi_ctl->hdl;
-
   int err = snd_rawmidi_open(&midi_ctl->hdl,NULL,init_data.devname,SND_RAWMIDI_NONBLOCK);
   if (err < 0) {
     fprintf(stderr, "Failed to open rawmidi\n");
@@ -13,43 +11,19 @@ int init_midi_controller(MidiController *midi_ctl, midiInitData init_data)
 
   if (midi_ctl->hdl) {
     snd_rawmidi_read(midi_ctl->hdl, NULL, 0);
-
-    midi_ctl->npfds = 1 + snd_rawmidi_poll_descriptors_count(midi_ctl->hdl);
-    midi_ctl->pfds = alloca(midi_ctl->npfds * sizeof(struct pollfd));
-    midi_ctl->pfds[0].fd = -1;
-
-    snd_rawmidi_poll_descriptors(midi_ctl->hdl, &(midi_ctl->pfds[1]), midi_ctl->npfds - 1);
+    fprintf(stdout, "MidiController initialized\n");
+    return 1;
   }
   else {
     fprintf(stderr, "Handle doesn't exist\n");
     return -1;
   }
-  fprintf(stdout, "MidiController initialized\n");
 }
 
 int fetch_midi_message(MidiController *midi_ctl, unsigned char *buf)
 {
   int length, err;
-  unsigned short revents;
-  struct timespec ts;
   clockid_t cid = CLOCK_REALTIME;
-
-  /*err = poll(midi_ctl->pfds, midi_ctl->npfds, -1);
-
-  if (clock_gettime(cid, &ts) < 0) {
-    fprintf(stderr, "clock_getres (%d) failed: %s", cid, strerror(errno));
-    return -1;
-  }
-
-  err = snd_rawmidi_poll_descriptors_revents(midi_ctl->hdl, 
-      &midi_ctl->pfds[1], midi_ctl->npfds - 1, &revents);
-  if (revents & (POLLERR | POLLHUP))
-    return -1;
-  if (!(revents & POLLIN)) {
-    if (midi_ctl->pfds[0].revents & POLLIN)
-      return -1;
-    return 0;
-  }*/
 
   err = snd_rawmidi_read(midi_ctl->hdl, buf, sizeof(buf));
   if (err == -EAGAIN)

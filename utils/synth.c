@@ -115,6 +115,8 @@ s16 new_note_sample(synthNote* note, double t, synthCommonData* cdata)
       return new_sample_sawtooth(note, t, amplitude_factor);
     case SineWave:
       return new_sample_sine(note, t, amplitude_factor);
+    case SquareWave:
+      return new_sample_square(note, t, amplitude_factor);
     default:
       return 0;
   }
@@ -123,14 +125,18 @@ s16 new_note_sample(synthNote* note, double t, synthCommonData* cdata)
 /// Get the s16 amplitude value for a sawtooth wave at a given time domain value t
 s16 new_sample_sawtooth(synthNote* note, double t, double amplitude_factor)
 {
-  double freq = 1 / (note->freq);
-  double amplitude_f = 2 * (t/freq - floor(0.5 + t/freq));
+  double amplitude_f = 2 * (note->freq*t - floor(0.5 + note->freq*t));
   return (s16)(amplitude_factor * amplitude_f);
 }
 
 s16 new_sample_sine(synthNote* note, double t, double amplitude_factor)
 {
-  //double angle = (2 * PI / note->freq) * ((int)(t * SAMPLE_RATE) % (int)note->freq);
-  double angle = (2 * PI / (1 / note->freq)) * t;
+  double angle = (2 * PI * note->freq) * t;
   return (s16)(amplitude_factor * sin(angle));
+}
+
+s16 new_sample_square(synthNote* note, double t, double amplitude_factor)
+{
+  double angle = 2 * PI * note->freq * t;
+  return (s16)(amplitude_factor * sgn(sin(angle)));
 }

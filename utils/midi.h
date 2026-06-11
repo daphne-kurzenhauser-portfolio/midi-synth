@@ -46,16 +46,13 @@ typedef struct MidiMsg {
 } MidiMsg;
 
 typedef struct MidiController {
-  MidiMsg midi_buffer[64];      ///< buffer of MidiMsg objects
-  midiCommonData midi_data;      ///< struct to hold and pass common data 
-  u8 buf_iter_idx;
-  snd_rawmidi_t *hdl;           ///< input handler for raw MIDI data
-  struct pollfd *pfds;
-  int npfds;
+  MidiMsg midi_buffer[64];        ///< buffer of MidiMsg objects
+  midiCommonData midi_data;       ///< struct to hold and pass common data 
+  u8 buf_iter_idx;                ///< index for current midi_buffer[]
+  snd_rawmidi_t *hdl;             ///< input handler for raw MIDI data
 } MidiController;
 
 int init_midi_controller(MidiController *midi_ctl, midiInitData init_data);
-
 int fetch_midi_message(MidiController *midi_ctl, unsigned char *buf);
 int parse_midi_buffer(MidiController *midi_ctl, unsigned char *buf);
 

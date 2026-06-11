@@ -23,13 +23,12 @@ static void usage(void)
   fprintf(stderr, "  options:\n");
   fprintf(stderr, "  --help               : prints this message\n");
   fprintf(stderr, "  --midi-device DEVICE : specifies device for raw MIDI input\n");
-  fprintf(stderr, "               example : ./synth --midi-device hw:1,0,0\n");
+  fprintf(stderr, "               example : ./synth --midi-device \'hw:1,0,0\'\n");
+  fprintf(stderr, "  --sine               : enables sine wave output for audio\n");
+  fprintf(stderr, "  --square             : enables square wave output for audio\n");
 }
 
-static void sighandler(int sig ATTRIBUTE_UNUSED)
-{
-  stop = 1;
-}
+static void sighandler(int sig ATTRIBUTE_UNUSED) { stop = 1; }
 
 static int paCallback(const void *inputBuffer, void *outputBuffer,
                       unsigned long framesPerBuffer,
@@ -44,6 +43,8 @@ static int paCallback(const void *inputBuffer, void *outputBuffer,
   for (int i=0; i<framesPerBuffer; i++) {
     out[i] = 0;
     t = (double)data->phase / SAMPLE_RATE;
+    // stack all the notes on top of each other--this works okay 
+    // but will cause clipping when playing multiple notes without any equalization
     for (int midi_note=0; midi_note<121; midi_note++) {
       synthNote* note = &((*data->notes)[midi_note]);
       if (note->isOn) {
@@ -77,26 +78,33 @@ int main(int argc,char** argv)
     const char *arg = argv[i];
     if (strcmp(arg, "--help") == 0) {
       usage();
-      exit(0);
+      return 0;
     } else if (strcmp(arg, "--midi-device") == 0) {
       if ((i+1) == argc) {
         fprintf(stderr, "must supply device handle for --midi-device flag\n");
-        exit(0);
+        return 0;
       }
       strncpy(midi_init_data.devname, argv[i+1], sizeof(midi_init_data.devname));
       fprintf(stdout, "Using device at MIDI: %s\n", midi_init_data.devname);
       do_device = 1;
     } else if (strcmp(arg, "--sine") == 0) {
       synth_init_data.wave_type = SineWave;
+    } else if (strcmp(arg, "--square") == 0) {
+      synth_init_data.wave_type = SquareWave;
     }
+  }
+
+  if (!do_device) {
+    fprintf(stderr, "Must supply MIDI device identifier\n");
+    usage();
+    return 0;
   }
 
   signal(SIGINT, sighandler);
   signal(SIGTERM, sighandler);
 
   // INITIALIZE
-  err = init_synth_controller(&synth_ctl, synth_init_data);
-
+  init_synth_controller(&synth_ctl, synth_init_data);
   err = init_midi_controller(midi_ctl, midi_init_data);
   if (err < 0) {
     fprintf(stderr, "Failed to initialize MidiController struct. Exiting\n");
